@@ -1,23 +1,46 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Users} from "lucide-react"
+import { Users } from "lucide-react"
+import { Loader2 } from "lucide-react" // spinner icon
 
 export default function LecturerLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle lecturer login logic here
-    console.log("Lecturer login:", { email, password })
+    setIsLoading(true)
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/admin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        alert("Login successful 🎉")
+        // redirect or set user state here
+      } else {
+        alert(data.message || "Login failed")
+      }
+    } catch (error) {
+      console.error(error)
+      alert("Something went wrong")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -60,8 +83,14 @@ export default function LecturerLogin() {
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" className="w-full" size="lg">
-                Login
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Logging in...
+                  </span>
+                ) : (
+                  "Login"
+                )}
               </Button>
             </form>
           </CardContent>
