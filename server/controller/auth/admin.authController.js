@@ -1,4 +1,4 @@
-const {loginAdminService} = require("../../services/auth/admin.service")
+const loginAdminService = require("../../services/auth/admin.service")
 
 const loginAdminController = async (req, res) => {
     const {email, password} = req.body
