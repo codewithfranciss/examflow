@@ -20,7 +20,7 @@ export default function LecturerLogin() {
     setIsLoading(true)
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/admin`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/auth`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

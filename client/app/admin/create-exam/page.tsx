@@ -7,9 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import toast from "react-hot-toast"
+import { Loader2 } from "lucide-react"
 
 export default function CreateExam() {
   const router = useRouter()
+
+  const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     courseName: "",
@@ -39,15 +43,42 @@ export default function CreateExam() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Creating exam:", formData)
-    router.push(`/lecturer/exam-questions?examId=1&courseCode=${formData.courseCode}`)
+    setLoading(true)
+
+    const payload = {
+      ...formData,
+      examTypes: formData.examType,
+      numberOfQuestions: parseInt(formData.numberOfQuestions),
+      duration: parseInt(formData.duration),
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.message || "Something went wrong")
+
+      toast.success("Exam created successfully")
+      
+    } catch (error: any) {
+      console.error("Error:", error)
+      toast.error("Failed to create exam ")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center py-6">
@@ -60,9 +91,7 @@ export default function CreateExam() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>Exam Details</CardTitle>
-            <CardDescription>
-              Fill in the information below to create a new examination
-            </CardDescription>
+            <CardDescription>Fill in the information below to create a new examination</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -81,7 +110,7 @@ export default function CreateExam() {
                   <Label htmlFor="courseCode">Course Code</Label>
                   <Input
                     id="courseCode"
-                    placeholder="e.g., CS101"
+                    placeholder="e.g., CSC101"
                     value={formData.courseCode}
                     onChange={(e) => handleInputChange("courseCode", e.target.value)}
                     required
@@ -89,15 +118,11 @@ export default function CreateExam() {
                 </div>
               </div>
 
-              {/* Multiple Exam Type Checkboxes */}
               <div className="space-y-2">
                 <Label>Exam Type</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {examTypes.map((type) => (
-                    <div
-                      key={type.value}
-                      className="flex items-center gap-3 p-2 border rounded-md hover:bg-slate-100"
-                    >
+                    <div key={type.value} className="flex items-center gap-3 p-2 border rounded-md hover:bg-slate-100">
                       <Checkbox
                         id={type.value}
                         checked={formData.examType.includes(type.value)}
@@ -105,9 +130,7 @@ export default function CreateExam() {
                           handleExamTypeChange(type.value, !!checked)
                         }
                       />
-                      <label htmlFor={type.value} className="text-sm">
-                        {type.label}
-                      </label>
+                      <label htmlFor={type.value} className="text-sm">{type.label}</label>
                     </div>
                   ))}
                 </div>
@@ -141,10 +164,16 @@ export default function CreateExam() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1">
-                  Create Exam
+                <Button type="submit" className="flex-1" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Creating...
+                    </>
+                  ) : (
+                    "Create Exam"
+                  )}
                 </Button>
-                <Button type="button" variant="outline" className="flex-1 bg-transparent">
+                <Button type="button" variant="outline" className="flex-1 bg-transparent" disabled={loading}>
                   Save as Draft
                 </Button>
               </div>

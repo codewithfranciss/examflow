@@ -11,7 +11,7 @@ app.use(cors({
   }));
 
 //routes
-app.use("/api/auth", authRoutes )
+app.use("/api/admin", authRoutes )
 app.use("/api/admin", examRoutes)
 
 module.exports = app;
