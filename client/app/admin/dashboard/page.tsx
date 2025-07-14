@@ -60,7 +60,7 @@ export default function LecturerDashboard() {
             </CardHeader>
             <CardContent>
               <Button asChild className="w-full">
-                <Link href="/lecturer/create-exam">Create New Exam</Link>
+                <Link href="/admin/create-exam">Create New Exam</Link>
               </Button>
             </CardContent>
           </Card>
