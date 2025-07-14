@@ -1,7 +1,7 @@
 const prisma = require('../../config/db');
 const bcrypt = require("bcrypt")
 
-const loginAdmin = async (email, password) => {
+const loginAdminService = async (email, password) => {
     const admin = await prisma.admin.findUnique({
         where: {email}
     })
@@ -16,4 +16,4 @@ const loginAdmin = async (email, password) => {
     return {id: admin.id, email: admin.email}
 }
 
-module.exports = loginAdmin;
+module.exports = loginAdminService;
