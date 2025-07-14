@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Users, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
-
+import { useRouter } from "next/navigation"
 export default function LecturerLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +32,8 @@ export default function LecturerLogin() {
 
       if (res.ok) {
         toast.success("🎉 Login successful! Redirecting...")
-        // TODO: router.push('/dashboard') or any redirect
+        localStorage.setItem("email", email)
+        router.push('/admin/dashboard')
       } else {
         toast.error(data.message || "Invalid credentials")
       }
