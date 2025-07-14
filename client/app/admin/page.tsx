@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Users } from "lucide-react"
-import { Loader2 } from "lucide-react" // spinner icon
+import { Users, Loader2 } from "lucide-react"
+import toast from "react-hot-toast"
 
 export default function LecturerLogin() {
   const [email, setEmail] = useState("")
@@ -30,14 +30,13 @@ export default function LecturerLogin() {
       const data = await res.json()
 
       if (res.ok) {
-        alert("Login successful 🎉")
-        // redirect or set user state here
+        toast.success("🎉 Login successful! Redirecting...")
+        // TODO: router.push('/dashboard') or any redirect
       } else {
-        alert(data.message || "Login failed")
+        toast.error(data.message || "Invalid credentials")
       }
     } catch (error) {
-      console.error(error)
-      alert("Something went wrong")
+      toast.error("Unable to connect to server")
     } finally {
       setIsLoading(false)
     }
