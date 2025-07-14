@@ -41,3 +41,5 @@ coverage/
 
 # Express session store (if you're using file-based store)
 sessions/
+
+/generated/prisma
