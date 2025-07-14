@@ -43,3 +43,5 @@ coverage/
 sessions/
 
 /generated/prisma
+
+scripts/seed.js
