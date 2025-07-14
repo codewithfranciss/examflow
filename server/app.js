@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const authRoutes = require('./routes/auth.routes')
+const examRoutes = require('./routes/exam.routes')
 const app = express();
 
 app.use(express.json())
@@ -11,5 +12,6 @@ app.use(cors({
 
 //routes
 app.use("/api/auth", authRoutes )
+app.use("/api/admin", examRoutes)
 
 module.exports = app;
