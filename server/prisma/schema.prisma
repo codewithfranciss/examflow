@@ -25,7 +25,7 @@ model Exam {
   id                String   @id @default(uuid())
   courseName        String
   courseCode        String
-  examTypes         String 
+  examTypes         String[] 
   numberOfQuestions Int
   duration          Int      // in minutes
   createdAt         DateTime @default(now())

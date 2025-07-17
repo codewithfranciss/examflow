@@ -6,7 +6,7 @@ const createExam = async(examData) => {
         data: {
           courseName,
           courseCode,
-          examTypes: JSON.stringify(examTypes), // Convert array to JSON string
+          examTypes,
           numberOfQuestions: parseInt(numberOfQuestions),
           duration: parseInt(duration),
         },
@@ -14,5 +14,16 @@ const createExam = async(examData) => {
   
       return newExam;
 }
+       const getAllExam = async() =>{
+     const exam = await prisma.exam.findMany({
+      orderBy: { createdAt: 'desc' },
+     })
+     return exam;
+}
 
-module.exports = {createExam}
+      const getExamById = async(id) =>{
+        const exam = await prisma.exam.findUnique({
+          where: { id: String(id)}})
+          return exam;
+      }
+module.exports = {createExam, getAllExam, getExamById}
