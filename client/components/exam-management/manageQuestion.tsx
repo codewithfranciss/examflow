@@ -6,7 +6,7 @@ import { Plus, FileText } from "lucide-react"
 import Link from "next/link"
 
 interface ManageQuestionsProps {
-  examId: number
+  examId: string,
   examCourseCode: string
 }
 

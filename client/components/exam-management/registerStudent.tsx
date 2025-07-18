@@ -23,15 +23,14 @@ interface Student {
 interface RegisterStudentsProps {
   examCourseCode: string
   students: Student[]
-  onAddStudent: (student: Omit<Student, "id">) => void
-  onRemoveStudent: (id: number) => void
+  examId: string
 }
 
 export default function RegisterStudents({
   examCourseCode,
   students,
-  onAddStudent,
-  onRemoveStudent,
+  examId
+ 
 }: RegisterStudentsProps) {
   const [newStudent, setNewStudent] = useState({
     matricNo: "",
@@ -47,13 +46,7 @@ export default function RegisterStudents({
 
   const handleAddStudent = () => {
     if (newStudent.matricNo && newStudent.name && newStudent.email && newStudent.department && newStudent.lecturer) {
-      onAddStudent({
-        matricNo: newStudent.matricNo,
-        name: newStudent.name,
-        email: newStudent.email,
-        department: newStudent.department,
-        lecturer: newStudent.lecturer,
-      })
+
       setNewStudent({
         matricNo: "",
         name: "",
@@ -237,7 +230,6 @@ export default function RegisterStudents({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onRemoveStudent(student.id)}
                       className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 className="h-4 w-4" />
