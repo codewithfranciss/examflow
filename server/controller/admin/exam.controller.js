@@ -2,7 +2,7 @@ const {
   createExam,
   getAllExam,
   getExamById,
-  updateExam
+  editExam
 } = require("../../services/admin/exam.service");
 
 const createExamController = async (req, res) => {
@@ -52,7 +52,7 @@ const updateExamController = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
-    const exam = await updateExam(id, updateData);
+    const exam = await editExam(id, updateData);
 
     res.status(200).json({ message: "Exam updated successfully", exam });
   } catch (error) {

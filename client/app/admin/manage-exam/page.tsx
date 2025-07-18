@@ -224,7 +224,7 @@ export default function ManageExams() {
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/lecturer/edit-exam?id=${exam.id}`}>
+                              <Link href={`/admin/edit-exam?id=${exam.id}`}>
                                 <Edit className="h-4 w-4" />
                               </Link>
                             </Button>

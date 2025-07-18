@@ -61,7 +61,7 @@ export default function EditExam() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/update-exam/${examId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/edit-exam/${examId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
