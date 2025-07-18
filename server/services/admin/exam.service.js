@@ -26,4 +26,19 @@ const createExam = async(examData) => {
           where: { id: String(id)}})
           return exam;
       }
-module.exports = {createExam, getAllExam, getExamById}
+
+      const editExam = async(id, updateData) => {
+        const { courseName, courseCode, examTypes, numberOfQuestions, duration } = updateData;
+        const updateExam = await prisma.exam.update({
+          where: { id: String(id) },
+          data: {
+            courseName,
+            courseCode,
+            examTypes,
+            numberOfQuestions: parseInt(numberOfQuestions),
+            duration: parseInt(duration),
+          }
+        })
+        return updateExam;
+      }
+module.exports = {createExam, getAllExam, getExamById, editExam}
