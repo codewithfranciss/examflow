@@ -149,7 +149,7 @@ export default function ManageExams() {
         </TabsContent>
 
         <TabsContent value="questions">
-          <ManageQuestions examId={exam.id} examCourseCode={exam.courseCode} />
+          <ManageQuestions examId={exam.id} examTitle={exam.courseName} examCourseCode={exam.courseCode} />
         </TabsContent>
       </Tabs>
     </div>

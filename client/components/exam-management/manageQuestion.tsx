@@ -8,9 +8,10 @@ import Link from "next/link"
 interface ManageQuestionsProps {
   examId: string,
   examCourseCode: string
+  examTitle: string
 }
 
-export default function ManageQuestions({ examId, examCourseCode }: ManageQuestionsProps) {
+export default function ManageQuestions({ examId, examCourseCode, examTitle }: ManageQuestionsProps) {
   return (
     <Card>
       <CardHeader>
@@ -20,7 +21,7 @@ export default function ManageQuestions({ examId, examCourseCode }: ManageQuesti
             <CardDescription>Add and manage questions for this exam</CardDescription>
           </div>
           <Button asChild>
-            <Link href={`/lecturer/exam-questions?examId=${examId}&courseCode=${examCourseCode}`}>
+            <Link href={`/admin/exam-questions?examId=${examId}&courseCode=${examCourseCode}&courseName=${examTitle}`}>
               <Plus className="h-4 w-4 mr-2" />
               Add Questions
             </Link>
