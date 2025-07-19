@@ -16,9 +16,9 @@ export default function StudentLogin() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle student login logic here
+   
     console.log("Student login:", { matricNumber, password })
-    // Redirect to exam selection page after successful login
+   
     window.location.href = "/student/select-exam"
   }
 

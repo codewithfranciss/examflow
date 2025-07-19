@@ -19,13 +19,13 @@ model Exam {
   id                String     @id @default(uuid())
   courseName        String
   courseCode        String
-  examTypes         String[]   // array of "msq", "subjective", "coding"
+  examTypes         String[]   
   numberOfQuestions Int
-  duration          Int        // in minutes
+  duration          Int       
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
-
-  questions         Question[] // <-- add back relation for easier querying
+  questions         Question[] 
+  students           Student[]
 }
 
 model Question {
@@ -37,4 +37,16 @@ model Question {
   examId        String
   exam          Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
+}
+
+model Student{
+    id          String    @id @default(uuid()) 
+  matricNo    String    @unique 
+  password    String    
+  department  String
+  lecturer    String
+  examId      String   
+  exam        Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
