@@ -137,9 +137,8 @@ export default function ExamQuestions() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
             <div className="flex items-center">
-              <Link href="/admin/manage-exams" className="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mr-4">
+              <Link href="/admin/manage-exam" className="inline-flex items-center text-slate-600 hover:text-slate-800 transition-colors mr-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Manage Exams
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">Add Questions</h1>

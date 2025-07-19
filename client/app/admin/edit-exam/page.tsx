@@ -77,7 +77,7 @@ export default function EditExam() {
       if (!res.ok) throw new Error("Failed to update exam")
 
       toast.success("Exam updated successfully")
-      router.push("/lecturer/manage-exams")
+      router.push("/admin/manage-exam")
     } catch (err) {
       console.error(err)
       toast.error("Update failed")
@@ -105,11 +105,10 @@ export default function EditExam() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center py-6">
             <Link
-              href="/lecturer/manage-exams"
+              href="/admin/manage-exam"
               className="inline-flex items-center text-slate-600 hover:text-slate-800 mr-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Manage Exams
             </Link>
             <h1 className="text-2xl font-bold text-slate-900">Edit Exam</h1>
           </div>

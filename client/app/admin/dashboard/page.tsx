@@ -76,7 +76,7 @@ export default function LecturerDashboard() {
             </CardHeader>
             <CardContent>
               <Button asChild variant="outline" className="w-full bg-transparent">
-                <Link href="/lecturer/manage-exams">View All Exams</Link>
+                <Link href="/admin/manage-exam">View All Exams</Link>
               </Button>
             </CardContent>
           </Card>

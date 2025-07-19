@@ -161,9 +161,8 @@ export default function ManageExams() {
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center">
-            <Link href="/lecturer/dashboard" className="inline-flex items-center text-slate-600 hover:text-slate-800 mr-4">
+            <Link href="/admin/dashboard" className="inline-flex items-center text-slate-600 hover:text-slate-800 mr-4">
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Dashboard
             </Link>
             <h1 className="text-2xl font-bold text-slate-900">
               {selectedExam ? `Manage ${selectedExam.courseCode}` : "Manage Exams"}
