@@ -1,6 +1,6 @@
 import { useState } from "react"
 import * as XLSX from "xlsx"
-
+import toast from "react-hot-toast"
 interface Student {
   id: number
   matricNo: string
@@ -19,7 +19,10 @@ export default function useRegisterStudents(initialStudents: Student[], examId: 
   const [registeredStudents, setRegisteredStudents] = useState<Student[]>(initialStudents)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
-  const handleAddStudent = () => {
+  const handleAddStudent = async() => {
+    if(!newStudent.matricNo ||!newStudent.password || !newStudent.department || !newStudent.lecturer){
+        toast.error("Please fill in all fields")
+    }
     if (newStudent.matricNo && newStudent.department && newStudent.lecturer) {
       const studentToAdd: Student = {
         id: registeredStudents.length + 1,
@@ -29,6 +32,28 @@ export default function useRegisterStudents(initialStudents: Student[], examId: 
         password: newStudent.password,
     
       }
+      try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/register/${examId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newStudent), 
+      });
+    
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Failed to add student.");
+      }else{
+        toast.success(data.message)
+      }
+    
+      setRegisteredStudents((prevStudents) => [...prevStudents, data.student]);
+    } catch (error: any) {
+      toast.error(`Error: ${error.message}`);
+    } 
+  
       const updated = [...registeredStudents, studentToAdd]
       setRegisteredStudents(updated)
       
