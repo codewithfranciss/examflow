@@ -9,7 +9,7 @@ interface Student {
   password?: string
 }
 
-export default function useRegisterStudents(initialStudents: Student[]) {
+export default function useRegisterStudents(initialStudents: Student[], examId: string) {
   const [newStudent, setNewStudent] = useState({
     matricNo: "",
     password: "",
@@ -27,6 +27,7 @@ export default function useRegisterStudents(initialStudents: Student[]) {
         department: newStudent.department,
         lecturer: newStudent.lecturer,
         password: newStudent.password,
+    
       }
       const updated = [...registeredStudents, studentToAdd]
       setRegisteredStudents(updated)

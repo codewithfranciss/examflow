@@ -37,7 +37,7 @@ const {
     handleFileUpload,
     handleDownloadTemplate,
     uploadError,
-  } = useRegisterStudents(initialStudents)
+  } = useRegisterStudents(initialStudents, examId)
 
   return (
     <Card>
