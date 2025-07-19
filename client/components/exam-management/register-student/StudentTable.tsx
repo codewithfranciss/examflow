@@ -2,7 +2,18 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Trash2 } from "lucide-react"
 
-export default function StudentTable({ students, onDelete }) {
+interface Student {
+    id: number;
+    matricNo: string;
+    password?: string; 
+    department: string;
+    lecturer: string;
+  }
+interface StudentTableProps {
+    students: Student[];
+    onDelete: (id: number) => void; 
+  }
+export default function StudentTable({ students, onDelete }: StudentTableProps) {
   return (
     <div className="rounded-md border">
       <Table>
