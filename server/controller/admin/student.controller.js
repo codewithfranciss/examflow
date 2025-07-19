@@ -1,4 +1,4 @@
-const { createStudent } = require("../../services/admin/student.service");
+const { createStudent, bulkRegisterStudents } = require("../../services/admin/student.service");
 
 const createStudentController = async (req, res) => {
   const { examId } = req.params;
@@ -22,4 +22,38 @@ const createStudentController = async (req, res) => {
   }
 };
 
-module.exports = { createStudentController };
+const bulkUploadStudents = async (req, res) => {
+    const { examId } = req.params;
+     const studentsData = req.body;
+
+    if (!Array.isArray(studentsData) || studentsData.length === 0) {
+      return res.status(400).json({ message: 'Invalid data: "studentsData" must be a non-empty array.' });
+    }
+    if (!examId) {
+      return res.status(400).json({ message: 'Exam ID is required.' });
+    }
+  
+    // Optional: More detailed validation for each student object in the array
+    const isValidBatch = studentsData.every(s =>
+      s.matricNo && s.password && s.department && s.lecturer
+    );
+    if (!isValidBatch) {
+        return res.status(400).json({ message: 'Each student in the batch must have matricNo, password, department, and lecturer.' });
+    }
+  
+    try {
+      const uploadResults = await bulkRegisterStudents(studentsData, examId);
+      res.status(200).json({
+        message: 'Bulk student upload processed successfully.',
+        summary: uploadResults,
+      });
+    } catch (error) {
+      console.error('Error during bulk student upload:', error); 
+      if (error.message === 'Exam not found') {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: 'Failed to process bulk student upload.', error: error.message });
+    }
+  };
+
+module.exports = { createStudentController, bulkUploadStudents};

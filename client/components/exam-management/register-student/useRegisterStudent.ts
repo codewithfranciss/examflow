@@ -53,9 +53,6 @@ export default function useRegisterStudents(initialStudents: Student[], examId: 
     } catch (error: any) {
       toast.error(`Error: ${error.message}`);
     } 
-  
-      const updated = [...registeredStudents, studentToAdd]
-      setRegisteredStudents(updated)
       
       setNewStudent({ matricNo: "", password: "", department: "", lecturer: "" })
     }
