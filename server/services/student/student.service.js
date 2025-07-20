@@ -24,7 +24,7 @@ const getExamsForStudent = async (matricNo) => {
   }
 
   return studentWithExams.map((student) => ({
-    examId: student.exam.id,
+    id: student.exam.id,
     courseName: student.exam.courseName,
     courseCode: student.exam.courseCode,
     examTypes: student.exam.examTypes,
