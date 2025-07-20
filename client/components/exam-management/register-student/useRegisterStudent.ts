@@ -58,43 +58,77 @@ export default function useRegisterStudents(initialStudents: Student[], examId: 
     }
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUploadError(null)
-    const file = event.target.files?.[0]
-    if (!file) return setUploadError("No file selected.")
-    if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
-      return setUploadError("Please upload a valid Excel file (.xlsx or .xls).")
-    }
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result
-        const workbook = XLSX.read(data, { type: "binary" })
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-        const json: any[] = XLSX.utils.sheet_to_json(worksheet)
+  
 
-        const uploaded: Student[] = json.map((row, index) => ({
-          id: registeredStudents.length + 1 + index,
-          matricNo: row["Matric Number"] || "",
-          password: row["Password"] || "",
-          department: row["Department"] || "",
-          lecturer: row["Lecturer"] || "",
-        }))
-
-        const valid = uploaded.every(s => s.matricNo && s.department && s.lecturer)
-        if (!valid) return setUploadError("Some rows are missing required fields.")
-
-        const updated = [...registeredStudents, ...uploaded]
-        setRegisteredStudents(updated)
-       
-      } catch (err) {
-        console.error(err)
-        setUploadError("Error processing file.")
-      }
-    }
-    reader.onerror = () => setUploadError("Failed to read file.")
-    reader.readAsBinaryString(file)
+const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  setUploadError(null);
+  const file = event.target.files?.[0];
+  if (!file) return setUploadError("No file selected.");
+  if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
+    return setUploadError("Please upload a valid Excel file (.xlsx or .xls).");
   }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = e.target?.result;
+      const workbook = XLSX.read(data, { type: "binary" });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+      const studentsData = json.map((row) => ({
+        matricNo: row["Matric Number"] || "",
+        password: row["Password"] || "",
+        department: row["Department"] || "",
+        lecturer: row["Lecturer"] || "",
+      }));
+
+      const isValid = studentsData.every(s => s.matricNo && s.password && s.department && s.lecturer);
+      if (!isValid) {
+        setUploadError("Some rows are missing required fields.");
+        toast.error("Some rows are missing required fields.");
+        return;
+      }
+
+      // 🟢 Send to backend
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/bulk-register/${examId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify( studentsData ),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.message || "Failed to upload students.");
+        return;
+      }
+
+      // ✅ Success toast with summary
+      toast.success(
+        `Upload successful: Inserted ${result.summary.totalInserted} / ${result.summary.totalReceived}. Ignored Duplicates: ${result.summary.duplicatesIgnoredInBatch}`
+      );
+
+      // Optionally update local state
+      
+
+    } catch (error: any) {
+      console.error("Error during file upload:", error);
+      setUploadError("Upload failed.");
+      toast.error("Upload failed: " + error.message);
+    }
+  };
+
+  reader.onerror = () => {
+    setUploadError("Failed to read file.");
+    toast.error("Failed to read file.");
+  };
+
+  reader.readAsBinaryString(file);
+};
+
 
   const handleDownloadTemplate = () => {
     const templateData = [
