@@ -1,31 +1,34 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { GraduationCap, ArrowLeft } from "lucide-react"
-
+import { GraduationCap } from "lucide-react"
 export default function StudentLogin() {
+  const router = useRouter()
+  const [fullName, setFullName] = useState("")
   const [matricNumber, setMatricNumber] = useState("")
   const [password, setPassword] = useState("")
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-   
-    console.log("Student login:", { matricNumber, password })
-   
-    window.location.href = "/student/select-exam"
+    localStorage.setItem("studentInfo", JSON.stringify({
+      fullName,
+      matricNumber,
+      password
+    }))
+
+    router.push("/student/select-exam")
   }
 
+ 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
@@ -36,6 +39,20 @@ export default function StudentLogin() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Matric Number */}
               <div className="space-y-2">
                 <Label htmlFor="matric">Matric Number</Label>
                 <Input
@@ -47,6 +64,8 @@ export default function StudentLogin() {
                   required
                 />
               </div>
+
+              {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password/Token</Label>
                 <Input
@@ -58,6 +77,8 @@ export default function StudentLogin() {
                   required
                 />
               </div>
+
+           
               <Button type="submit" className="w-full" size="lg">
                 Login
               </Button>

@@ -90,7 +90,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         return;
       }
 
-      // 🟢 Send to backend
+     
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/bulk-register/${examId}`, {
         method: "POST",
         headers: {
@@ -105,19 +105,18 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         toast.error(result.message || "Failed to upload students.");
         return;
       }
-
-      // ✅ Success toast with summary
       toast.success(
         `Upload successful: Inserted ${result.summary.totalInserted} / ${result.summary.totalReceived}. Ignored Duplicates: ${result.summary.duplicatesIgnoredInBatch}`
       );
 
-      // Optionally update local state
+      event.target.value = "";
       
 
     } catch (error: any) {
       console.error("Error during file upload:", error);
       setUploadError("Upload failed.");
       toast.error("Upload failed: " + error.message);
+      
     }
   };
 
