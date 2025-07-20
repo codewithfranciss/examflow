@@ -1,4 +1,4 @@
-const prisma = require("../config/db");
+const prisma = require('../../config/db');
 
 const getExamsForStudent = async (matricNo) => {
   const studentWithExams = await prisma.student.findMany({
