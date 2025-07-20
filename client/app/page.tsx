@@ -19,37 +19,35 @@ export default function StudentLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-   
 
-    setTimeout(async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/student`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ matricNo, password }),
-        })
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/student`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ matricNo, password }),
+      })
 
-        const data = await res.json()
+      const data = await res.json()
 
-        if (res.ok) {
-          toast.success("🎉 Login successful! Redirecting...")
-          localStorage.setItem("studentInfo", JSON.stringify({
-            fullName,
-            matricNo,
-            password
-          }))
-          router.push("/student/select-exam")
-        } else {
-          toast.error(data.message || "Invalid credentials")
-        }
-      } catch (error) {
-        toast.error("Unable to connect to server")
-      } finally {
-        setIsLoading(false)
+      if (res.ok) {
+        toast.success("🎉 Login successful! Redirecting...")
+        // Store only necessary student info, NOT the password
+        localStorage.setItem("studentAuthInfo", JSON.stringify({
+          fullName,
+          matricNo,
+        }))
+        router.push("/student/select-exam")
+      } else {
+        toast.error(data.message || "Invalid credentials")
       }
-    }, 3000) // 3-second delay before making the request
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Unable to connect to server. Please check your internet connection.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
