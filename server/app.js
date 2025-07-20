@@ -12,7 +12,7 @@ app.use(cors({
   }));
 
 //routes
-app.use("/api/admin", authRoutes )
+app.use("/api/auth", authRoutes )
 app.use("/api/admin", examRoutes)
 app.use("/api/admin", studentRoutes)
 
