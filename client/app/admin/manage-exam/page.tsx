@@ -68,13 +68,11 @@ export default function ManageExams() {
 
   const [courseStudents, setCourseStudents] = useState<Student[]>([])
 
-  const handleDeleteExam = async (examId: string) => {
-    const confirm = window.confirm("Are you sure you want to delete this exam? This action cannot be undone.")
-  
-    if (!confirm) return
+  const handleDeleteExam = async () => {
+    if (!examToDelete) return
   
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/delete-exam/${examId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/delete-exam/${examToDelete}`, {
         method: "DELETE",
       })
   
@@ -83,13 +81,13 @@ export default function ManageExams() {
       if (!res.ok) throw new Error(result.error || "Failed to delete exam.")
   
       toast.success("Exam deleted successfully.")
-  
-      // Option 1: Refresh the page
-      router.refresh?.() // If using Next.js 13+
-      // Option 2: Or remove exam from local state if stored
-      // setExams(prev => prev.filter(e => e.id !== examId))
+      // Remove from state
+      setExams((prev) => prev.filter((e) => e.id !== examToDelete))
     } catch (err: any) {
       toast.error(err.message || "An error occurred.")
+    } finally {
+      setShowDeleteDialog(false)
+      setExamToDelete(null)
     }
   }
   
@@ -253,7 +251,10 @@ export default function ManageExams() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteExam(exam.id)}
+                              onClick={() => {
+                                setExamToDelete(exam.id)
+                                setShowDeleteDialog(true)
+                              }}
                               className="text-red-600 hover:text-red-800"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -280,7 +281,7 @@ export default function ManageExams() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDeleteExam} className="bg-red-600 hover:bg-red-700">
+              <AlertDialogAction onClick={handleDeleteExam} className="bg-red-600 hover:bg-red-700">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

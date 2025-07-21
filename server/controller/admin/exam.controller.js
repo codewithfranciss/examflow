@@ -2,7 +2,8 @@ const {
   createExam,
   getAllExam,
   getExamById,
-  editExam
+  editExam,
+  deleteExam
 } = require("../../services/admin/exam.service");
 
 const createExamController = async (req, res) => {
