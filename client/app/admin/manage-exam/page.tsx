@@ -35,7 +35,8 @@ import RegisterStudents from "@/components/exam-management/registerStudent"
 import StudentPerformance from "@/components/exam-management/studentPerformance"
 import ManageQuestions from "@/components/exam-management/manageQuestion"
 import ExamStats from "@/components/exam-management/examStats"
-
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 interface Exam {
   id: string
   courseName: string
@@ -63,13 +64,35 @@ export default function ManageExams() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [examToDelete, setExamToDelete] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   const [courseStudents, setCourseStudents] = useState<Student[]>([])
 
-  const handleDeleteExam = (examId: string) => {
-    setExamToDelete(examId)
-    setShowDeleteDialog(true)
+  const handleDeleteExam = async (examId: string) => {
+    const confirm = window.confirm("Are you sure you want to delete this exam? This action cannot be undone.")
+  
+    if (!confirm) return
+  
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/delete-exam/${examId}`, {
+        method: "DELETE",
+      })
+  
+      const result = await res.json()
+  
+      if (!res.ok) throw new Error(result.error || "Failed to delete exam.")
+  
+      toast.success("Exam deleted successfully.")
+  
+      // Option 1: Refresh the page
+      router.refresh?.() // If using Next.js 13+
+      // Option 2: Or remove exam from local state if stored
+      // setExams(prev => prev.filter(e => e.id !== examId))
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred.")
+    }
   }
+  
 
   const confirmDeleteExam = () => {
     console.log("Deleting exam:", examToDelete)
