@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -39,6 +39,7 @@ export default function StudentExam() {
 
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, Set<number>>>({})
   const [answers, setAnswers] = useState<Record<string, Record<number, string>>>({})
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem("selectedExamDetails")
@@ -50,6 +51,10 @@ export default function StudentExam() {
 
     try {
       const parsed: Exam = JSON.parse(stored)
+      function shuffleArray<T>(array: T[]): T[] {
+        return [...array].sort(() => Math.random() - 0.5)
+      }
+      parsed.questions = shuffleArray(parsed.questions)
       setExam(parsed)
       setTimeLeft(parsed.duration * 60)
 
@@ -78,11 +83,72 @@ export default function StudentExam() {
     }
   }, [])
 
+  const handleSubmit = useCallback(async () => {
+    if (!exam || submitting) return
+    setSubmitting(true)
+
+    const flatAnswers: { questionId: string; answer: string }[] = []
+
+    const grouped = exam.questions.reduce((acc: Record<string, Question[]>, q) => {
+      const type = q.type.toLowerCase()
+      if (!acc[type]) acc[type] = []
+      acc[type].push(q)
+      return acc
+    }, {})
+
+    Object.entries(grouped).forEach(([type, questions]) => {
+      questions.forEach((question, index) => {
+        const answer = answers[type]?.[index + 1] || ""
+        flatAnswers.push({ questionId: question.id, answer })
+      })
+    })
+
+    const student = JSON.parse(localStorage.getItem("studentAuthInfo") || "{}")
+    const stored: Exam = JSON.parse(localStorage.getItem("selectedExamDetails") || "{}")
+
+    const submissionPayload = {
+      matricNo: student.matricNo || "N/A",
+      fullName: student.fullName || "N/A",
+      department: stored?.department || "N/A",
+      lecturer: stored?.lecturer || "N/A",
+      examId: exam.examId,
+      answers: flatAnswers,
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/student/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submissionPayload),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) throw new Error(result.error || "Submission failed.")
+      toast.success(`Exam Submitted!`)
+      router.push("/student/submitted")
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong.")
+      router.push("/student/submitted")
+    }
+  }, [exam, submitting, answers, router])
+
   useEffect(() => {
     if (!examStarted || timeLeft <= 0) return
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000)
+  
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          handleSubmit()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  
     return () => clearInterval(timer)
-  }, [examStarted, timeLeft])
+  }, [examStarted, handleSubmit])
 
   const formatTime = (secs: number) => {
     const h = Math.floor(secs / 3600).toString().padStart(2, "0")
@@ -163,7 +229,7 @@ export default function StudentExam() {
               onValueChange={(val) => handleAnswerChange(lowerType, currentQuestion, val)}
             >
               {question.options?.map((opt, i) => {
-                const letter = String.fromCharCode(65 + i) // A, B, C, D
+                const letter = String.fromCharCode(65 + i)
                 return (
                   <div key={i} className="flex items-center space-x-2">
                     <RadioGroupItem value={letter} id={`q${i}`} />
@@ -174,82 +240,17 @@ export default function StudentExam() {
             </RadioGroup>
           )}
 
-          {lowerType === "subjective" && (
+          {lowerType === "subjective" || lowerType === "coding" ? (
             <Textarea
               value={answers[lowerType]?.[currentQuestion] || ""}
               onChange={(e) => handleAnswerChange(lowerType, currentQuestion, e.target.value)}
-              placeholder="Type your answer..."
+              placeholder={lowerType === "coding" ? "// write your code here" : "Type your answer..."}
+              className={lowerType === "coding" ? "font-mono min-h-[300px]" : ""}
             />
-          )}
-
-          {lowerType === "coding" && (
-            <Textarea
-              value={answers[lowerType]?.[currentQuestion] || ""}
-              onChange={(e) => handleAnswerChange(lowerType, currentQuestion, e.target.value)}
-              placeholder="// write your code here"
-              className="font-mono min-h-[300px]"
-            />
-          )}
+          ) : null}
         </CardContent>
       </Card>
     )
-  }
-
-  const handleSubmit = async () => {
-    if (!exam) return
-  
-    const flatAnswers: { questionId: string; answer: string }[] = []
-
-    const grouped = exam.questions.reduce((acc: Record<string, Question[]>, q) => {
-      const type = q.type.toLowerCase()
-      if (!acc[type]) acc[type] = []
-      acc[type].push(q)
-      return acc
-    }, {})
-  
-    Object.entries(grouped).forEach(([type, questions]) => {
-      questions.forEach((question, index) => {
-        const answer = answers[type]?.[index + 1] || "" 
-        flatAnswers.push({
-          questionId: question.id,
-          answer,
-        })
-      })
-    })
-  
-    const student = JSON.parse(localStorage.getItem("studentAuthInfo") || "{}")
-    const stored: Exam = JSON.parse(localStorage.getItem("selectedExamDetails") || "{}")
-  
-    const submissionPayload = {
-      matricNo: student.matricNo || "N/A",
-      fullName: student.fullName || "N/A",
-      department: stored?.department || "N/A",
-      lecturer: stored?.lecturer || "N/A",
-      examId: exam.examId,
-      answers: flatAnswers,
-    }
-  console.log(submissionPayload.answers)
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/student/submit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(submissionPayload)
-      })
-  
-      const result = await res.json()
-  
-      if (!res.ok) {
-        throw new Error(result.error || "Submission failed.")
-      }
-  
-      toast.success(`Exam Submitted! Score: ${result.result.score}/${result.result.totalQuestions}`)
-      router.push("/student/submitted")
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong. Try again.")
-      router.push('/student/select-exam')
-    }
   }
 
   if (!examStarted) {
@@ -316,9 +317,10 @@ export default function StudentExam() {
               size="lg"
               className="bg-green-600 hover:bg-green-700"
               onClick={handleSubmit}
+              disabled={submitting}
             >
               <Send className="mr-2 w-4 h-4" />
-              Submit Exam
+              {submitting ? "Submitting..." : "Submit Exam"}
             </Button>
           </div>
         </div>

@@ -27,7 +27,7 @@ const submitExamController = async (req, res) => {
     }
 
     if (err.code === "P2002") {
-      return res.status(409).json({ error: "Duplicate submission detected." })
+      return res.status(409).json({ error: "You have already submitted this exam." })
     }
 
     console.error("❌ Submission Error:", err)
