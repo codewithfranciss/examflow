@@ -40,7 +40,6 @@ export default function StudentExam() {
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, Set<number>>>({})
   const [answers, setAnswers] = useState<Record<string, Record<number, string>>>({})
 
-  // Load exam info from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("selectedExamDetails")
     if (!stored) {
@@ -52,13 +51,13 @@ export default function StudentExam() {
     try {
       const parsed: Exam = JSON.parse(stored)
       setExam(parsed)
-      setTimeLeft(parsed.duration * 60) // convert minutes to seconds
+      setTimeLeft(parsed.duration * 60)
 
-      // Initialize empty answers
       const grouped = parsed.questions.reduce((acc: any, q, i) => {
         const index = i + 1
-        if (!acc[q.type]) acc[q.type] = { questions: [], answers: {}, answered: new Set() }
-        acc[q.type].questions.push({ ...q, index })
+        const type = q.type.toLowerCase()
+        if (!acc[type]) acc[type] = { questions: [], answers: {}, answered: new Set() }
+        acc[type].questions.push({ ...q, index })
         return acc
       }, {})
 
@@ -79,7 +78,6 @@ export default function StudentExam() {
     }
   }, [])
 
-  // Timer countdown
   useEffect(() => {
     if (!examStarted || timeLeft <= 0) return
     const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000)
@@ -94,28 +92,34 @@ export default function StudentExam() {
   }
 
   const handleAnswerChange = (type: string, index: number, value: string) => {
+    const lowerType = type.toLowerCase()
     setAnswers((prev) => ({
       ...prev,
-      [type]: {
-        ...prev[type],
+      [lowerType]: {
+        ...prev[lowerType],
         [index]: value,
       },
     }))
     setAnsweredQuestions((prev) => ({
       ...prev,
-      [type]: new Set([...prev[type], index]),
+      [lowerType]: new Set([...prev[lowerType], index]),
     }))
   }
 
   const QuestionNavigation = ({ type }: { type: string }) => {
-    const questions = exam?.questions.filter((q) => q.type === type) || []
+    const lowerType = type.toLowerCase()
+    const questions = exam?.questions.filter((q) => q.type.toLowerCase() === lowerType) || []
     return (
       <div className="grid grid-cols-5 gap-2">
         <div className="col-span-5 text-sm font-semibold">
-          {type.toUpperCase()} ({answeredQuestions[type]?.size || 0}/{questions.length})
+          {lowerType.toUpperCase()} ({answeredQuestions[lowerType]?.size || 0}/{questions.length})
         </div>
         {questions.map((q, i) => {
-          const status = answeredQuestions[type]?.has(i + 1) ? "answered" : i + 1 === currentQuestion && type === currentTab ? "current" : "unanswered"
+          const status = answeredQuestions[lowerType]?.has(i + 1)
+            ? "answered"
+            : i + 1 === currentQuestion && lowerType === currentTab
+              ? "current"
+              : "unanswered"
           const styles = {
             answered: "bg-green-500 text-white",
             current: "bg-blue-500 text-white",
@@ -127,7 +131,7 @@ export default function StudentExam() {
               className={`w-10 h-10 hover:bg-slate-200 ${styles[status]}`}
               onClick={() => {
                 setCurrentQuestion(i + 1)
-                setCurrentTab(type)
+                setCurrentTab(lowerType)
               }}
             >
               {i + 1}
@@ -140,9 +144,10 @@ export default function StudentExam() {
 
   const renderQuestion = () => {
     if (!exam) return null
-    const allQuestions = exam.questions.filter((q) => q.type === currentTab)
+    const allQuestions = exam.questions.filter((q) => q.type.toLowerCase() === currentTab)
     const question = allQuestions[currentQuestion - 1]
     if (!question) return <p>No question found.</p>
+    const lowerType = question.type.toLowerCase()
 
     return (
       <Card>
@@ -151,30 +156,36 @@ export default function StudentExam() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p>{question.question}</p>
-          {question.type === "msq" && (
+
+          {lowerType === "msq" && (
             <RadioGroup
-              value={answers["msq"]?.[currentQuestion] || ""}
-              onValueChange={(val) => handleAnswerChange("msq", currentQuestion, val)}
+              value={answers[lowerType]?.[currentQuestion] || ""}
+              onValueChange={(val) => handleAnswerChange(lowerType, currentQuestion, val)}
             >
-              {question.options?.map((opt, i) => (
-                <div key={i} className="flex items-center space-x-2">
-                  <RadioGroupItem value={opt} id={`q${i}`} />
-                  <Label htmlFor={`q${i}`}>{opt}</Label>
-                </div>
-              ))}
+              {question.options?.map((opt, i) => {
+                const letter = String.fromCharCode(65 + i) // A, B, C, D
+                return (
+                  <div key={i} className="flex items-center space-x-2">
+                    <RadioGroupItem value={letter} id={`q${i}`} />
+                    <Label htmlFor={`q${i}`}>{`${letter}. ${opt}`}</Label>
+                  </div>
+                )
+              })}
             </RadioGroup>
           )}
-          {question.type === "subjective" && (
+
+          {lowerType === "subjective" && (
             <Textarea
-              value={answers["subjective"]?.[currentQuestion] || ""}
-              onChange={(e) => handleAnswerChange("subjective", currentQuestion, e.target.value)}
+              value={answers[lowerType]?.[currentQuestion] || ""}
+              onChange={(e) => handleAnswerChange(lowerType, currentQuestion, e.target.value)}
               placeholder="Type your answer..."
             />
           )}
-          {question.type === "coding" && (
+
+          {lowerType === "coding" && (
             <Textarea
-              value={answers["coding"]?.[currentQuestion] || ""}
-              onChange={(e) => handleAnswerChange("coding", currentQuestion, e.target.value)}
+              value={answers[lowerType]?.[currentQuestion] || ""}
+              onChange={(e) => handleAnswerChange(lowerType, currentQuestion, e.target.value)}
               placeholder="// write your code here"
               className="font-mono min-h-[300px]"
             />
@@ -184,22 +195,31 @@ export default function StudentExam() {
     )
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!exam) return
   
     const flatAnswers: { questionId: string; answer: string }[] = []
 
-    exam.questions.forEach((question, index) => {
-      const answer = answers[question.type]?.[index + 1] || ""
-      flatAnswers.push({
-        questionId: question.id,
-        answer,
+    const grouped = exam.questions.reduce((acc: Record<string, Question[]>, q) => {
+      const type = q.type.toLowerCase()
+      if (!acc[type]) acc[type] = []
+      acc[type].push(q)
+      return acc
+    }, {})
+  
+    Object.entries(grouped).forEach(([type, questions]) => {
+      questions.forEach((question, index) => {
+        const answer = answers[type]?.[index + 1] || "" 
+        flatAnswers.push({
+          questionId: question.id,
+          answer,
+        })
       })
     })
   
-  
     const student = JSON.parse(localStorage.getItem("studentAuthInfo") || "{}")
     const stored: Exam = JSON.parse(localStorage.getItem("selectedExamDetails") || "{}")
+  
     const submissionPayload = {
       matricNo: student.matricNo || "N/A",
       fullName: student.fullName || "N/A",
@@ -208,12 +228,29 @@ export default function StudentExam() {
       examId: exam.examId,
       answers: flatAnswers,
     }
-
+  console.log(submissionPayload.answers)
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/student/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(submissionPayload)
+      })
   
-    toast.success("Exam Submitted Successfully")
-    router.push('/student/submitted')
+      const result = await res.json()
+  
+      if (!res.ok) {
+        throw new Error(result.error || "Submission failed.")
+      }
+  
+      toast.success(`Exam Submitted! Score: ${result.result.score}/${result.result.totalQuestions}`)
+      router.push("/student/submitted")
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong. Try again.")
+      router.push('/student/select-exam')
+    }
   }
-  
 
   if (!examStarted) {
     return (
@@ -248,14 +285,12 @@ export default function StudentExam() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-6 max-w-7xl mx-auto">
-        {/* Sidebar */}
         <div className="space-y-4">
           {exam?.examTypes.map((type) => (
             <QuestionNavigation key={type} type={type} />
           ))}
         </div>
 
-        {/* Main */}
         <div className="lg:col-span-3 space-y-6">
           <Tabs value={currentTab} onValueChange={(tab) => {
             setCurrentTab(tab)
@@ -263,12 +298,14 @@ export default function StudentExam() {
           }}>
             <TabsList className="grid grid-cols-3 w-full">
               {exam?.examTypes.map((type) => (
-                <TabsTrigger key={type} value={type}>{type.toUpperCase()}</TabsTrigger>
+                <TabsTrigger key={type} value={type.toLowerCase()}>
+                  {type.toUpperCase()}
+                </TabsTrigger>
               ))}
             </TabsList>
 
             {exam?.examTypes.map((type) => (
-              <TabsContent key={type} value={type}>
+              <TabsContent key={type} value={type.toLowerCase()}>
                 {renderQuestion()}
               </TabsContent>
             ))}
