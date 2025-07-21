@@ -68,6 +68,7 @@ export default function CreateExam() {
       if (!res.ok) throw new Error(data.message || "Something went wrong")
 
       toast.success("Exam created successfully")
+      router.push("/admin/manage-exam")
       
     } catch (error: any) {
       console.error("Error:", error)
