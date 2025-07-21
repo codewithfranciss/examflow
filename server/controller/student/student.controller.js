@@ -30,7 +30,7 @@ const submitExamController = async (req, res) => {
       return res.status(409).json({ error: "You have already submitted this exam." })
     }
 
-    console.error("❌ Submission Error:", err)
+    console.error("Submission Error:", err)
     return res.status(500).json({ error: "Internal Server Error" })
   }
 }
