@@ -41,4 +41,20 @@ const createExam = async(examData) => {
         })
         return updateExam;
       }
-module.exports = {createExam, getAllExam, getExamById, editExam}
+
+      const deleteExam = async (examId) => {
+        const exam = await prisma.exam.findUnique({
+          where: { id: examId },
+        })
+      
+        if (!exam) {
+          throw new Error("Exam not found")
+        }
+      
+        await prisma.exam.delete({
+          where: { id: examId },
+        })
+      
+        return { message: "Exam and related data deleted successfully" }
+      }
+module.exports = {createExam, getAllExam, getExamById, editExam, deleteExam}

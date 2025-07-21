@@ -66,9 +66,22 @@ const updateExamController = async (req, res) => {
   }
 };
 
+const deleteExamController = async (req, res) => {
+  const { examId } = req.params
+
+  try {
+    const result = await deleteExam(examId)
+    res.status(200).json(result)
+  } catch (err) {
+    console.error(err)
+    res.status(err.message === "Exam not found" ? 404 : 500).json({ error: err.message })
+  }
+}
+
 module.exports = {
   createExamController,
   fetchAllExam,
   fetchExamById, 
-  updateExamController
+  updateExamController,
+  deleteExamController
 };
