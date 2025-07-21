@@ -26,6 +26,7 @@ model Exam {
   updatedAt         DateTime   @updatedAt
   questions         Question[] 
   students           Student[]
+  studentPerformance StudentPerformance[]
 }
 
 model Question {
@@ -49,6 +50,19 @@ model Student{
   exam        Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  @@unique([matricNo, examId])
+}
 
+model StudentPerformance{
+ id          String    @id @default(uuid()) 
+  matricNo    String
+  fullName    String
+   score          Int
+  totalQuestions Int
+   department  String
+  lecturer    String
+  examId      String 
+  exam        Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
   @@unique([matricNo, examId])
 }
