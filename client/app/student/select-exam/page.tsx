@@ -98,7 +98,9 @@ export default function SelectExam() {
       duration: selectedExam.duration,
       courseCode: selectedExam.courseCode,
       courseName: selectedExam.courseName,
-      questions: selectedExam.questions
+      questions: selectedExam.questions,
+      lecturer: selectedLecturer,
+      department: selectedDepartment
     }
 
     localStorage.setItem("selectedExamDetails", JSON.stringify(examData))

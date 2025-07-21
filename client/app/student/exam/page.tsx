@@ -25,6 +25,8 @@ type Exam = {
   courseCode: string
   examTypes: string[]
   questions: Question[]
+  lecturer: string
+  department: string
 }
 
 export default function StudentExam() {
@@ -182,6 +184,37 @@ export default function StudentExam() {
     )
   }
 
+  const handleSubmit = () => {
+    if (!exam) return
+  
+    const flatAnswers: { questionId: string; answer: string }[] = []
+
+    exam.questions.forEach((question, index) => {
+      const answer = answers[question.type]?.[index + 1] || ""
+      flatAnswers.push({
+        questionId: question.id,
+        answer,
+      })
+    })
+  
+  
+    const student = JSON.parse(localStorage.getItem("studentAuthInfo") || "{}")
+    const stored: Exam = JSON.parse(localStorage.getItem("selectedExamDetails") || "{}")
+    const submissionPayload = {
+      matricNo: student.matricNo || "N/A",
+      fullName: student.fullName || "N/A",
+      department: stored?.department || "N/A",
+      lecturer: stored?.lecturer || "N/A",
+      examId: exam.examId,
+      answers: flatAnswers,
+    }
+
+  
+    toast.success("Exam Submitted Successfully")
+    router.push('/student/submitted')
+  }
+  
+
   if (!examStarted) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
@@ -245,10 +278,7 @@ export default function StudentExam() {
             <Button
               size="lg"
               className="bg-green-600 hover:bg-green-700"
-              onClick={() => {
-                console.log("Answers submitted:", answers)
-                router.push("/student/exam-submitted")
-              }}
+              onClick={handleSubmit}
             >
               <Send className="mr-2 w-4 h-4" />
               Submit Exam
