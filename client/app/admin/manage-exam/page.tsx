@@ -157,7 +157,7 @@ export default function ManageExams() {
             examCourseCode={exam.courseCode}
             examCourseName={exam.courseName}
             examId={exam.id}
-            students={courseStudents}
+            
           />
         </TabsContent>
 

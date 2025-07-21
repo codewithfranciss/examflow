@@ -32,7 +32,7 @@ export default function LecturerLogin() {
       const data = await res.json()
 
       if (res.ok) {
-        toast.success("🎉 Login successful! Redirecting...")
+        toast.success(" Login successful! Redirecting...")
         localStorage.setItem("email", email)
         router.push('/admin/dashboard')
       } else {

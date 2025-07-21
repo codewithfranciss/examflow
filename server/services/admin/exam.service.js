@@ -70,7 +70,7 @@ const createExam = async(examData) => {
             department: true,
             lecturer: true,
             examId: true,
-            createdAt: true,
+            
           },
         })
       }
