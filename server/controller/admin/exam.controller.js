@@ -3,7 +3,8 @@ const {
   getAllExam,
   getExamById,
   editExam,
-  deleteExam
+  deleteExam,
+  fetchPerformanceByExamId
 } = require("../../services/admin/exam.service");
 
 const createExamController = async (req, res) => {
@@ -79,10 +80,37 @@ const deleteExamController = async (req, res) => {
   }
 }
 
+const getStudentPerformanceController = async (req, res) => {
+  const { examId } = req.params
+
+  if (!examId) return res.status(400).json({ error: 'Exam ID is required' })
+
+  try {
+    const performance = await fetchPerformanceByExamId(examId)
+
+    res.json({
+      success: true,
+      students: performance.map((p) => ({
+        id: p.id,
+        matricNo: p.matricNo,
+        name: p.fullName,
+        department: p.department,
+        lecturer: p.lecturer,
+        score: p.score,
+        status: "completed", // since they're in studentPerformance
+      })),
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to fetch student performance' })
+  }
+}
+
 module.exports = {
   createExamController,
   fetchAllExam,
   fetchExamById, 
   updateExamController,
-  deleteExamController
+  deleteExamController,
+  getStudentPerformanceController
 };

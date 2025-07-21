@@ -57,4 +57,22 @@ const createExam = async(examData) => {
       
         return { message: "Exam and related data deleted successfully" }
       }
-module.exports = {createExam, getAllExam, getExamById, editExam, deleteExam}
+
+      const fetchPerformanceByExamId = async (examId) => {
+        return await prisma.studentPerformance.findMany({
+          where: { examId },
+          select: {
+            id: true,
+            matricNo: true,
+            fullName: true,
+            score: true,
+            totalQuestions: true,
+            department: true,
+            lecturer: true,
+            examId: true,
+            createdAt: true,
+          },
+        })
+      }
+      
+module.exports = {createExam, getAllExam, getExamById, editExam, deleteExam, fetchPerformanceByExamId}

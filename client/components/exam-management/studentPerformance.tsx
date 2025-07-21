@@ -21,9 +21,10 @@ interface StudentPerformanceProps {
   examCourseCode: string
   examCourseName: string
   students: Student[]
+  examId: string
 }
 
-export default function StudentPerformance({ examCourseCode, examCourseName, students }: StudentPerformanceProps) {
+export default function StudentPerformance({ examCourseCode, examCourseName, students, examId }: StudentPerformanceProps) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600"
     if (score >= 60) return "text-yellow-600"

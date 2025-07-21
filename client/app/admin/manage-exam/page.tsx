@@ -156,6 +156,7 @@ export default function ManageExams() {
           <StudentPerformance
             examCourseCode={exam.courseCode}
             examCourseName={exam.courseName}
+            examId={exam.id}
             students={courseStudents}
           />
         </TabsContent>
