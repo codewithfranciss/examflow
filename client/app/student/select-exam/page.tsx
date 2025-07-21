@@ -44,11 +44,11 @@ export default function SelectExam() {
         setFullName(parsed.fullName || "")
       } catch {
         toast.error("Session error. Please log in again.")
-        router.push("/student/login")
+        router.push("/")
       }
     } else {
       toast.error("Please log in first.")
-      router.push("/student/login")
+      router.push("/")
     }
   }, [router])
 

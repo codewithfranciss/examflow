@@ -1,0 +1,261 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Clock, Play, Send } from "lucide-react"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
+
+type Question = {
+  id: string
+  type: string
+  question: string
+  options?: string[]
+}
+
+type Exam = {
+  examId: string
+  duration: number
+  courseName: string
+  courseCode: string
+  examTypes: string[]
+  questions: Question[]
+}
+
+export default function StudentExam() {
+  const router = useRouter()
+  const [exam, setExam] = useState<Exam | null>(null)
+  const [timeLeft, setTimeLeft] = useState(0)
+  const [examStarted, setExamStarted] = useState(false)
+  const [currentTab, setCurrentTab] = useState("msq")
+  const [currentQuestion, setCurrentQuestion] = useState(1)
+
+  const [answeredQuestions, setAnsweredQuestions] = useState<Record<string, Set<number>>>({})
+  const [answers, setAnswers] = useState<Record<string, Record<number, string>>>({})
+
+  // Load exam info from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("selectedExamDetails")
+    if (!stored) {
+      toast.error("No exam data found.")
+      router.push("/student/select-exam")
+      return
+    }
+
+    try {
+      const parsed: Exam = JSON.parse(stored)
+      setExam(parsed)
+      setTimeLeft(parsed.duration * 60) // convert minutes to seconds
+
+      // Initialize empty answers
+      const grouped = parsed.questions.reduce((acc: any, q, i) => {
+        const index = i + 1
+        if (!acc[q.type]) acc[q.type] = { questions: [], answers: {}, answered: new Set() }
+        acc[q.type].questions.push({ ...q, index })
+        return acc
+      }, {})
+
+      const initAnswers: Record<string, Record<number, string>> = {}
+      const initAnswered: Record<string, Set<number>> = {}
+
+      Object.keys(grouped).forEach((type) => {
+        initAnswers[type] = {}
+        initAnswered[type] = new Set()
+      })
+
+      setAnswers(initAnswers)
+      setAnsweredQuestions(initAnswered)
+      setCurrentTab(Object.keys(grouped)[0] || "msq")
+    } catch (err) {
+      toast.error("Invalid exam data.")
+      router.push("/student/select-exam")
+    }
+  }, [])
+
+  // Timer countdown
+  useEffect(() => {
+    if (!examStarted || timeLeft <= 0) return
+    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000)
+    return () => clearInterval(timer)
+  }, [examStarted, timeLeft])
+
+  const formatTime = (secs: number) => {
+    const h = Math.floor(secs / 3600).toString().padStart(2, "0")
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, "0")
+    const s = (secs % 60).toString().padStart(2, "0")
+    return `${h}:${m}:${s}`
+  }
+
+  const handleAnswerChange = (type: string, index: number, value: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [type]: {
+        ...prev[type],
+        [index]: value,
+      },
+    }))
+    setAnsweredQuestions((prev) => ({
+      ...prev,
+      [type]: new Set([...prev[type], index]),
+    }))
+  }
+
+  const QuestionNavigation = ({ type }: { type: string }) => {
+    const questions = exam?.questions.filter((q) => q.type === type) || []
+    return (
+      <div className="grid grid-cols-5 gap-2">
+        <div className="col-span-5 text-sm font-semibold">
+          {type.toUpperCase()} ({answeredQuestions[type]?.size || 0}/{questions.length})
+        </div>
+        {questions.map((q, i) => {
+          const status = answeredQuestions[type]?.has(i + 1) ? "answered" : i + 1 === currentQuestion && type === currentTab ? "current" : "unanswered"
+          const styles = {
+            answered: "bg-green-500 text-white",
+            current: "bg-blue-500 text-white",
+            unanswered: "bg-slate-200 text-black",
+          }
+          return (
+            <Button
+              key={q.id}
+              className={`w-10 h-10 hover:bg-slate-200 ${styles[status]}`}
+              onClick={() => {
+                setCurrentQuestion(i + 1)
+                setCurrentTab(type)
+              }}
+            >
+              {i + 1}
+            </Button>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const renderQuestion = () => {
+    if (!exam) return null
+    const allQuestions = exam.questions.filter((q) => q.type === currentTab)
+    const question = allQuestions[currentQuestion - 1]
+    if (!question) return <p>No question found.</p>
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Question {currentQuestion}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p>{question.question}</p>
+          {question.type === "msq" && (
+            <RadioGroup
+              value={answers["msq"]?.[currentQuestion] || ""}
+              onValueChange={(val) => handleAnswerChange("msq", currentQuestion, val)}
+            >
+              {question.options?.map((opt, i) => (
+                <div key={i} className="flex items-center space-x-2">
+                  <RadioGroupItem value={opt} id={`q${i}`} />
+                  <Label htmlFor={`q${i}`}>{opt}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          )}
+          {question.type === "subjective" && (
+            <Textarea
+              value={answers["subjective"]?.[currentQuestion] || ""}
+              onChange={(e) => handleAnswerChange("subjective", currentQuestion, e.target.value)}
+              placeholder="Type your answer..."
+            />
+          )}
+          {question.type === "coding" && (
+            <Textarea
+              value={answers["coding"]?.[currentQuestion] || ""}
+              onChange={(e) => handleAnswerChange("coding", currentQuestion, e.target.value)}
+              placeholder="// write your code here"
+              className="font-mono min-h-[300px]"
+            />
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!examStarted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">{exam?.courseName}</CardTitle>
+            <CardDescription>Duration: {exam?.duration} mins</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={() => setExamStarted(true)} size="lg" className="w-full">
+              <Play className="mr-2 w-4 h-4" />
+              Start Exam
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <header className="bg-white shadow px-6 py-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-semibold">{exam?.courseName}</h1>
+          <p className="text-sm text-slate-500">{exam?.courseCode}</p>
+        </div>
+        <div className="font-mono text-lg">
+          <Clock className="inline w-5 h-5 mr-1" />
+          <span className={timeLeft < 600 ? "text-red-600" : ""}>{formatTime(timeLeft)}</span>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-6 max-w-7xl mx-auto">
+        {/* Sidebar */}
+        <div className="space-y-4">
+          {exam?.examTypes.map((type) => (
+            <QuestionNavigation key={type} type={type} />
+          ))}
+        </div>
+
+        {/* Main */}
+        <div className="lg:col-span-3 space-y-6">
+          <Tabs value={currentTab} onValueChange={(tab) => {
+            setCurrentTab(tab)
+            setCurrentQuestion(1)
+          }}>
+            <TabsList className="grid grid-cols-3 w-full">
+              {exam?.examTypes.map((type) => (
+                <TabsTrigger key={type} value={type}>{type.toUpperCase()}</TabsTrigger>
+              ))}
+            </TabsList>
+
+            {exam?.examTypes.map((type) => (
+              <TabsContent key={type} value={type}>
+                {renderQuestion()}
+              </TabsContent>
+            ))}
+          </Tabs>
+
+          <div className="flex justify-center">
+            <Button
+              size="lg"
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => {
+                console.log("Answers submitted:", answers)
+                router.push("/student/exam-submitted")
+              }}
+            >
+              <Send className="mr-2 w-4 h-4" />
+              Submit Exam
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
