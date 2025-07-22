@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
 import {
@@ -43,10 +43,12 @@ export default function ExamQuestions() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const examId = searchParams.get("examId")
-  const courseCode = searchParams.get("courseCode")
-  const courseName = searchParams.get("courseName")
+ 
 
   const [questions, setQuestions] = useState<Question[]>([])
+  const [courseCode, setCourseCode] = useState("")
+  const [courseName, setCourseName] = useState("")
+  const [totalQuestions, setTotalQuestions]= useState("")
   const [isSaving, setIsSaving] = useState(false)
 
   const [newQuestion, setNewQuestion] = useState<NewQuestion>({
@@ -58,11 +60,23 @@ export default function ExamQuestions() {
 
   const [showUploadModal, setShowUploadModal] = useState(false)
 
+  useEffect(()=>{
+      const fetchExam = async() =>{
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/fetch-exam/${examId}`)
+        const data = await res.json()
+        setCourseCode(data.exam.courseCode)
+        setCourseName(data.exam.courseName)
+        setTotalQuestions(data.exam.numberOfQuestions)
+        
+      }
+      fetchExam()
+  },[examId])
+
   const examData = {
     courseCode: courseCode,
     courseName: courseName,
     examType: "Mixed",
-    totalQuestions: 15,
+    totalQuestions: totalQuestions,
   }
 
   const handleSaveAll = async () => {

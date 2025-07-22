@@ -5,7 +5,7 @@ const {createExamController, fetchAllExam, fetchExamById, updateExamController, 
 
 router.post("/create", createExamController)
 router.get("/fetch-exam", fetchAllExam)
-router.get('/fetch-exam/:id', fetchExamById)
+router.get('/fetch-exam/:examId', fetchExamById)
 router.put("/edit-exam/:id", updateExamController)
 router.delete("/delete-exam/:examId", deleteExamController)
 router.post("/create-question/:examId", createQuestionController)

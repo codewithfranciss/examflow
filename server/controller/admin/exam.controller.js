@@ -34,8 +34,9 @@ const fetchAllExam = async (req, res) => {
 
 const fetchExamById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const exam = await getExamById(id);
+    const { examId } = req.params;
+    const exam = await getExamById(examId);
+    console.log(examId)
 
     if (!exam) {
       return res.status(404).json({ message: "Exam not found" });

@@ -32,8 +32,8 @@ export default function StudentLogin() {
       const data = await res.json()
 
       if (res.ok) {
-        toast.success("🎉 Login successful! Redirecting...")
-        // Store only necessary student info, NOT the password
+        toast.success("Login successful! Redirecting...")
+        
         localStorage.setItem("studentAuthInfo", JSON.stringify({
           fullName,
           matricNo,
