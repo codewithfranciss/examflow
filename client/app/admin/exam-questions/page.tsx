@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle
@@ -24,7 +25,7 @@ import ExcelUploadBox from "@/components/exam-questions/excel-upload-box"
 type QuestionType = "msq" | "subjective" | "coding"
 
 interface Question {
-  id: number
+  id: string
   type: QuestionType
   question: string
   options?: string[]
@@ -72,7 +73,7 @@ export default function ExamQuestions() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/create-question/${examId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({questions}),
+        body: JSON.stringify({ questions }),
       })
 
       const data = await res.json()
@@ -91,15 +92,19 @@ export default function ExamQuestions() {
     }
   }
 
-  const handleParsedExcel = (parsedQuestions: Question[]) => {
-    setQuestions((prev) => [...prev, ...parsedQuestions])
+  const handleParsedExcel = (parsedQuestions: any[]) => {
+    const questionsWithIds = parsedQuestions.map(q => ({
+      ...q,
+      id: uuidv4(),
+    }))
+    setQuestions(prev => [...prev, ...questionsWithIds])
     setShowUploadModal(false)
   }
 
   const handleAddQuestion = () => {
     if (newQuestion.question.trim()) {
       const question: Question = {
-        id: questions.length + 1,
+        id: uuidv4(),
         type: newQuestion.type,
         question: newQuestion.question,
         options: newQuestion.type === "msq" ? newQuestion.options.filter((opt) => opt.trim()) : undefined,
@@ -111,7 +116,7 @@ export default function ExamQuestions() {
     }
   }
 
-  const handleDeleteQuestion = (id: number) => {
+  const handleDeleteQuestion = (id: string) => {
     setQuestions(questions.filter((q) => q.id !== id))
   }
 
@@ -132,7 +137,6 @@ export default function ExamQuestions() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
@@ -170,10 +174,8 @@ export default function ExamQuestions() {
         </div>
       </header>
 
-      {/* Body */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Add Question Form */}
           <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardHeader>
@@ -208,40 +210,52 @@ export default function ExamQuestions() {
                 </div>
 
                 {newQuestion.type === "msq" && (
-                  <>
-                    <Label>Options</Label>
-                    {newQuestion.options.map((option, index) => (
-                      <div key={index} className="flex gap-2">
-                        <span className="w-8 h-10 flex items-center justify-center bg-slate-100 rounded text-sm font-medium">
-                          {String.fromCharCode(65 + index)}
-                        </span>
-                        <Input
-                          placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                          value={option}
-                          onChange={(e) => handleOptionChange(index, e.target.value)}
-                        />
-                      </div>
-                    ))}
-                    <div className="space-y-2">
-                      <Label htmlFor="correctAnswer">Correct Answer</Label>
-                      <Select
-                        value={newQuestion.correctAnswer}
-                        onValueChange={(value: string) => setNewQuestion({ ...newQuestion, correctAnswer: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select correct answer" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="a">A</SelectItem>
-                          <SelectItem value="b">B</SelectItem>
-                          <SelectItem value="c">C</SelectItem>
-                          <SelectItem value="d">D</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
+  <>
+    <Label>Options</Label>
+    {newQuestion.options.map((option, index) => (
+      <div key={index} className="flex gap-2">
+        <span className="w-8 h-10 flex items-center justify-center bg-slate-100 rounded text-sm font-medium">
+          {String.fromCharCode(65 + index)}
+        </span>
+        <Input
+          placeholder={`Option ${String.fromCharCode(65 + index)}`}
+          value={option}
+          onChange={(e) => handleOptionChange(index, e.target.value)}
+        />
+      </div>
+    ))}
+    <div className="space-y-2">
+      <Label htmlFor="correctAnswer">Correct Answer</Label>
+      <Select
+        value={newQuestion.correctAnswer}
+        onValueChange={(value: string) => setNewQuestion({ ...newQuestion, correctAnswer: value })}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select correct answer" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="a">A</SelectItem>
+          <SelectItem value="b">B</SelectItem>
+          <SelectItem value="c">C</SelectItem>
+          <SelectItem value="d">D</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </>
+)}
 
+{(newQuestion.type === "subjective" || newQuestion.type === "coding") && (
+  <div className="space-y-2">
+    <Label htmlFor="correctAnswerText">Correct Answer</Label>
+    <Textarea
+      id="correctAnswerText"
+      placeholder="Enter the correct answer..."
+      value={newQuestion.correctAnswer}
+      onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
+      className="min-h-[80px]"
+    />
+  </div>
+)}
                 <Button onClick={handleAddQuestion} className="w-full">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Question
@@ -250,7 +264,6 @@ export default function ExamQuestions() {
             </Card>
           </div>
 
-          {/* Questions List */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
@@ -290,6 +303,8 @@ export default function ExamQuestions() {
                             </div>
                           </div>
                         </CardHeader>
+
+                        {/* MSQ Answer Display */}
                         {question.type === "msq" && question.options && (
                           <CardContent className="pt-0">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -309,6 +324,18 @@ export default function ExamQuestions() {
                                   )}
                                 </div>
                               ))}
+                            </div>
+                          </CardContent>
+                        )}
+
+                        {/* Subjective / Coding Answer Display */}
+                        {(question.type === "subjective" || question.type === "coding") && (
+                          <CardContent className="pt-0">
+                            <div className="bg-slate-50 p-4 rounded text-sm">
+                              <span className="font-medium">Answer:</span>
+                              <p className="mt-1 text-slate-700 whitespace-pre-wrap">
+                                {question.correctAnswer || "No answer provided"}
+                              </p>
                             </div>
                           </CardContent>
                         )}

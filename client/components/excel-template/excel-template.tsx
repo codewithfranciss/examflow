@@ -3,11 +3,40 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Download } from "lucide-react"
+import * as XLSX from "xlsx"
 
-import {  FileText, Download } from "lucide-react"
+const generateMsqTemplate = () => {
+  const wsData = [
+    ["Question Type", "Question Text", "Option A", "Option B", "Option C", "Option D", "Correct Answer"],
+    ["msq", "What is the capital of France?", "Paris", "London", "Berlin", "Rome", "a"],
+  ]
 
+  const worksheet = XLSX.utils.aoa_to_sheet(wsData)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, "MSQ Template")
+  XLSX.writeFile(workbook, "msq_template.xlsx")
+}
 
-const ExcelUploadTemplate = () => (
+const generateSubjectiveTemplate = () => {
+  const wsData = [
+    ["Question Type", "Question Text", "Answer"],
+    ["subjective", "Explain the concept of polymorphism in OOP.", "Polymorphism allows methods to behave differently based on the object calling them."],
+  ]
+
+  const worksheet = XLSX.utils.aoa_to_sheet(wsData)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Subjective Template")
+  XLSX.writeFile(workbook, "subjective_template.xlsx")
+}
+
+const ExcelUploadTemplate = () => {
+  const handleDownload = () => {
+    generateMsqTemplate()
+    generateSubjectiveTemplate()
+  }
+
+  return (
     <Card className="mt-4">
       <CardHeader>
         <CardTitle className="text-lg">Excel Template Format</CardTitle>
@@ -17,44 +46,20 @@ const ExcelUploadTemplate = () => (
         <div className="text-sm space-y-2">
           <p className="font-medium">Required Columns:</p>
           <ul className="list-disc list-inside space-y-1 text-slate-600">
-            <li>
-              <strong>Column A:</strong> Question Type (msq, subjective, coding)
-            </li>
-            <li>
-              <strong>Column B:</strong> Question Text
-            </li>
-            <li>
-              <strong>Column C:</strong> Option A (for MSQ only)
-            </li>
-            <li>
-              <strong>Column D:</strong> Option B (for MSQ only)
-            </li>
-            <li>
-              <strong>Column E:</strong> Option C (for MSQ only)
-            </li>
-            <li>
-              <strong>Column F:</strong> Option D (for MSQ only)
-            </li>
-            <li>
-              <strong>Column G:</strong> Correct Answer (a, b, c, d for MSQ)
-            </li>
-            <li>
-              <strong>Column H:</strong> Points
-            </li>
+            <li><strong>Column A:</strong> Question Type (msq, subjective, coding)</li>
+            <li><strong>Column B:</strong> Question Text</li>
+            <li><strong>Column C - G:</strong> MSQ Options & Correct Answer (only for MSQ)</li>
           </ul>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="h-4 w-4 mr-2" />
-            Download Template
-          </Button>
-          <Button variant="outline" size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            View Sample
+            Download Templates
           </Button>
         </div>
       </CardContent>
     </Card>
   )
+}
 
-  export default ExcelUploadTemplate;
+export default ExcelUploadTemplate

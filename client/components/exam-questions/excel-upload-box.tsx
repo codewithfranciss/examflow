@@ -1,8 +1,8 @@
-// components/excel-upload-box.tsx
 "use client"
 
 import { useRef } from "react"
 import * as XLSX from "xlsx"
+import { v4 as uuidv4 } from "uuid"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Upload, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -32,20 +32,25 @@ export default function ExcelUploadBox({ onParsedQuestions }: ExcelUploadBoxProp
       const sheet = workbook.Sheets[workbook.SheetNames[0]]
       const rows = XLSX.utils.sheet_to_json(sheet)
 
-      const questions = (rows as any[]).map((row, index) => {
+      const questions = (rows as any[]).map((row) => {
         const type = row["Question Type"]?.toLowerCase()
         const question = row["Question Text"]
-        const options = [row["Option A"], row["Option B"], row["Option C"], row["Option D"]]
-        const correctAnswer = row["Correct Answer"]?.toLowerCase()
-        
+
+        const isMSQ = type === "msq"
+        const isSubjective = type === "subjective"
 
         return {
-          id: index + 1,
+          id: uuidv4(), // ✅ Unique ID
           type,
           question,
-          options: type === "msq" ? options : undefined,
-          correctAnswer,
-          
+          options: isMSQ
+            ? [row["Option A"], row["Option B"], row["Option C"], row["Option D"]]
+            : undefined,
+          correctAnswer: isMSQ
+            ? row["Correct Answer"]?.toLowerCase()
+            : isSubjective
+            ? row["Answer"]
+            : undefined,
         }
       })
 
@@ -59,7 +64,9 @@ export default function ExcelUploadBox({ onParsedQuestions }: ExcelUploadBoxProp
     <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Upload Questions</DialogTitle>
-        <DialogDescription>Upload questions to this exam using Excel</DialogDescription>
+        <DialogDescription>
+          Upload questions to this exam using Excel
+        </DialogDescription>
       </DialogHeader>
 
       <Alert>
