@@ -4,7 +4,7 @@ const createQuestionController = async(req, res) =>{
     try {
         const { examId } = req.params
         const { questions } = req.body
-        console.log(examId)
+        
     
         if (!examId) return res.status(400).json({ message: "Exam ID is required" })
         if (!Array.isArray(questions) || questions.length === 0) {
