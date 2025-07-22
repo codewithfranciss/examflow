@@ -46,6 +46,7 @@ export default function ExamQuestions() {
  
 
   const [questions, setQuestions] = useState<Question[]>([])
+  const [allowedTypes, setAllowedTypes] = useState<QuestionType[]>([])
   const [courseCode, setCourseCode] = useState("")
   const [courseName, setCourseName] = useState("")
   const [totalQuestions, setTotalQuestions]= useState("")
@@ -67,6 +68,7 @@ export default function ExamQuestions() {
         setCourseCode(data.exam.courseCode)
         setCourseName(data.exam.courseName)
         setTotalQuestions(data.exam.numberOfQuestions)
+        setAllowedTypes(data.exam.examTypes)
         
       }
       fetchExam()
@@ -204,10 +206,17 @@ export default function ExamQuestions() {
                     onValueChange={(value: QuestionType) => setNewQuestion({ ...newQuestion, type: value })}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
+                    
                     <SelectContent>
+                      {allowedTypes.includes("msq") && (
                       <SelectItem value="msq">Multiple Choice (MSQ)</SelectItem>
-                      <SelectItem value="subjective">Subjective</SelectItem>
-                      <SelectItem value="coding">Coding</SelectItem>
+                      )}
+                      {allowedTypes.includes("subjective") && (
+                        <SelectItem value="subjective">Subjective</SelectItem>
+                      )}
+                      {allowedTypes.includes("coding") && (
+                        <SelectItem value="coding">Coding</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
