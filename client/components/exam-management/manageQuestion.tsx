@@ -21,7 +21,7 @@ export default function ManageQuestions({ examId, examCourseCode, examTitle }: M
             <CardDescription>Add and manage questions for this exam</CardDescription>
           </div>
           <Button asChild>
-            <Link href={`/admin/exam-questions?examId=${examId}&courseCode=${examCourseCode}&courseName=${examTitle}`}>
+            <Link href={`/admin/exam-questions?examId=${examId}`}>
               <Plus className="h-4 w-4 mr-2" />
               Add Questions
             </Link>
@@ -34,7 +34,7 @@ export default function ManageQuestions({ examId, examCourseCode, examTitle }: M
           <p className="mb-2">No questions added yet</p>
           <p className="text-sm mb-4">Start by adding questions manually or uploading via Excel</p>
           <Button asChild>
-            <Link href={`/lecturer/exam-questions?examId=${examId}&courseCode=${examCourseCode}`}>
+            <Link href={`/admin/exam-questions?examId=${examId}`}>
               Add Your First Question
             </Link>
           </Button>
